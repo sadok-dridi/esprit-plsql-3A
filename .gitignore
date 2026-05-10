@@ -1,0 +1,39 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite database (auto-created at runtime)
+data/app.db
+
+# Root-level duplicates (real files are in static/ and data/)
+/index.html
+/app.js
+/styles.css
+/lessons.json
+
+# Build script (not needed on VPS)
+build_lessons.py
+
+# Source PDFs (not needed for deployment)
+*.pdf
+
+# Dev notes / planning docs
+PROGRESS_MEMORY.md
+NEXT_PLAN.md
+BUILD_PLAN.md
+README_WEB.md
+ROADMAP.md
+
+# Old deleted files (merged into SPA)
+roadmap.html
+roadmap.js
+skills.html
+skills-lock.json
+
+# Local agent skills
+.agents/
+skills-lock.json

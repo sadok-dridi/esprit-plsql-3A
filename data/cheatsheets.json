@@ -1,0 +1,128 @@
+[
+  {
+    "chapter": "CH1: Anonymous Blocks",
+    "syntaxes": [
+      { "label": "Block", "code": "DECLARE\n  -- optional\nBEGIN\n  -- mandatory\nEXCEPTION\n  -- optional\nEND;\n/" },
+      { "label": "Variable", "code": "v_name type := value;\nv_name type DEFAULT value;\nv_name CONSTANT type := value;\nv_name type NOT NULL := value;" },
+      { "label": "%TYPE", "code": "v_sal employees.salary%TYPE;\nv_copy v_sal%TYPE;" },
+      { "label": "%ROWTYPE", "code": "v_emp employees%ROWTYPE;\nSELECT * INTO v_emp FROM employees WHERE id=100;" },
+      { "label": "RECORD", "code": "TYPE t_rec IS RECORD (\n  f1 type1, f2 type2\n);\nv_rec t_rec;" },
+      { "label": "SELECT INTO", "code": "SELECT col1, col2 INTO v1, v2\nFROM table WHERE condition;" },
+      { "label": "IF/ELSIF", "code": "IF cond THEN ...\nELSIF cond2 THEN ...\nELSE ...\nEND IF;" },
+      { "label": "CASE (expr)", "code": "CASE expr\n  WHEN val1 THEN ...\n  WHEN val2 THEN ...\n  ELSE ...\nEND CASE;" },
+      { "label": "CASE (cond)", "code": "CASE\n  WHEN cond1 THEN ...\n  WHEN cond2 THEN ...\n  ELSE ...\nEND CASE;" },
+      { "label": "WHILE", "code": "WHILE condition LOOP\n  ...\nEND LOOP;" },
+      { "label": "LOOP EXIT", "code": "LOOP\n  ...\n  EXIT WHEN condition;\nEND LOOP;" },
+      { "label": "FOR", "code": "FOR i IN [REVERSE] lower..upper LOOP\n  ...\nEND LOOP;" }
+    ],
+    "rules": [
+      "Every statement ends with ;  —  / executes the block in SQL*Plus",
+      "DECLARE is optional; BEGIN is required; EXCEPTION is optional",
+      "SELECT INTO must return exactly one row (use cursors for multiple rows)",
+      "CONSTANT and NOT NULL variables must be initialized at declaration",
+      ":= is the assignment operator; DEFAULT is an alternative for initialization",
+      "%TYPE copies a column's type; %ROWTYPE copies an entire row structure",
+      "RECORD is a user-defined composite type; pick only needed fields",
+      "Variable names must differ from table/column names used in the block",
+      "Identifiers: max 30 characters, first char must be a letter",
+      "Inner block variables shadow outer block variables of the same name"
+    ]
+  },
+  {
+    "chapter": "CH2: Cursors",
+    "syntaxes": [
+      { "label": "Declare", "code": "CURSOR cur_name IS\n  SELECT ... FROM ... WHERE ...;" },
+      { "label": "Parameterized", "code": "CURSOR cur_name(p1 type, p2 type) IS\n  SELECT ... WHERE col = p1;" },
+      { "label": "Lifecycle", "code": "OPEN cur_name;\nFETCH cur_name INTO v1, v2;\nCLOSE cur_name;" },
+      { "label": "LOOP + EXIT", "code": "OPEN cur;\nLOOP\n  FETCH cur INTO vars;\n  EXIT WHEN cur%NOTFOUND;\n  ...\nEND LOOP;\nCLOSE cur;" },
+      { "label": "WHILE + %FOUND", "code": "OPEN cur;\nFETCH cur INTO vars;\nWHILE cur%FOUND LOOP\n  ...\n  FETCH cur INTO vars;\nEND LOOP;\nCLOSE cur;" },
+      { "label": "%ROWTYPE", "code": "rec cur%ROWTYPE;\nFETCH cur INTO rec;\n-- rec.col_name" },
+      { "label": "Cursor FOR", "code": "FOR rec IN cur_name LOOP\n  -- auto OPEN, FETCH, %NOTFOUND, CLOSE\n  DBMS_OUTPUT.PUT_LINE(rec.col);\nEND LOOP;" },
+      { "label": "Implicit FOR", "code": "FOR rec IN (SELECT col FROM table) LOOP\n  DBMS_OUTPUT.PUT_LINE(rec.col);\nEND LOOP;" }
+    ],
+    "rules": [
+      "Implicit cursors: for single-row SELECT INTO or DML — auto-managed by Oracle",
+      "Explicit cursors: for multi-row queries — declared and controlled by the user",
+      "OPEN opens the cursor and executes the query; no exception if 0 rows returned",
+      "FETCH reads current row into variables; advances to next row",
+      "CLOSE frees memory; must close before re-opening with different parameter values",
+      "%ISOPEN: TRUE if cursor is open",
+      "%FOUND: TRUE if last FETCH returned a row",
+      "%NOTFOUND: TRUE if last FETCH returned no row (use in EXIT WHEN)",
+      "%ROWCOUNT: number of rows fetched so far",
+      "Cursor FOR loop: no DECLARE record, no OPEN/FETCH/CLOSE — all automatic",
+      "FOR rec IN (SELECT ...): no cursor declaration needed at all",
+      "Parameterized cursors: pass values at OPEN time — filter results dynamically"
+    ]
+  },
+  {
+    "chapter": "CH3: Procedures & Functions",
+    "syntaxes": [
+      { "label": "Procedure", "code": "CREATE OR REPLACE PROCEDURE proc_name\n  (p1 IN type, p2 OUT type, p3 IN OUT type)\nIS\n  -- local vars (no DECLARE keyword)\nBEGIN\n  ...\nEXCEPTION\n  ...\nEND proc_name;" },
+      { "label": "Function", "code": "CREATE OR REPLACE FUNCTION func_name\n  (p1 type, p2 type)\nRETURN return_type\nIS\n  -- local vars\nBEGIN\n  ...\n  RETURN value;\nEND func_name;" },
+      { "label": "Call proc", "code": "DECLARE\n  v_nb NUMBER;\nBEGIN\n  proc_name(100, 'IT', v_nb);\nEND;" },
+      { "label": "Call func", "code": "-- In PL/SQL block:\nIF func_name(124) THEN ... END IF;\n\n-- In SQL:\nSELECT func_name(col) FROM table;" },
+      { "label": "Local proc", "code": "DECLARE\n  PROCEDURE local_proc(a IN NUMBER, b OUT NUMBER) IS\n  BEGIN\n    b := a * 2;\n  END;\nBEGIN\n  local_proc(5, result);\nEND;" },
+      { "label": "Local func", "code": "DECLARE\n  FUNCTION local_func(x NUMBER) RETURN NUMBER IS\n  BEGIN\n    RETURN x * x;\n  END;\nBEGIN\n  result := local_func(5);\nEND;" }
+    ],
+    "rules": [
+      "Stored = autonomous, compiled, stored in DB with CREATE OR REPLACE",
+      "Non-stored = local, declared inside a DECLARE section (no CREATE OR REPLACE)",
+      "Procedure: 3 parameter modes — IN (default), OUT, IN OUT",
+      "Function: parameters always IN; must have RETURN clause",
+      "Use IS (not DECLARE) to start the body of a stored/local subprogram",
+      "A function must RETURN a value; a procedure does not",
+      "Functions can be called in SQL (SELECT func(col) FROM table) or PL/SQL",
+      "Procedures called as standalone statements: proc_name(args);",
+      "OR REPLACE replaces existing definition without dropping first",
+      "user_objects holds object info; user_source holds source code",
+      "DESCRIBE proc_name shows parameter list and types"
+    ]
+  },
+  {
+    "chapter": "CH4: Triggers",
+    "syntaxes": [
+      { "label": "Trigger", "code": "CREATE OR REPLACE TRIGGER trig_name\n  {BEFORE|AFTER}\n  {INSERT|UPDATE|DELETE}\n  [OF col1, col2]\n  ON table_name\n  [FOR EACH ROW]\n  [WHEN (condition)]\nDECLARE\n  ...\nBEGIN\n  ...\nEND;" },
+      { "label": "Statement-level", "code": "CREATE TRIGGER trig_log\n  AFTER INSERT OR UPDATE\n  ON employees\nBEGIN\n  IF INSERTING THEN ...\n  ELSIF UPDATING THEN ...\n  END IF;\nEND;" },
+      { "label": "Row-level", "code": "CREATE TRIGGER trig_row\n  BEFORE INSERT OR UPDATE OR DELETE\n  ON departments\n  FOR EACH ROW\nBEGIN\n  IF INSERTING THEN\n    DBMS_OUTPUT.PUT_LINE('Insert');\n  END IF;\nEND;" },
+      { "label": ":NEW/:OLD", "code": ":NEW.col -- new value (INSERT, UPDATE)\n:OLD.col -- old value (UPDATE, DELETE)\n\nINSERT: :NEW=value, :OLD=null\nUPDATE: :NEW=new,  :OLD=old\nDELETE: :NEW=null,  :OLD=value" },
+      { "label": "WHEN clause", "code": "CREATE TRIGGER trig_check\n  BEFORE INSERT ON dept\n  FOR EACH ROW\n  WHEN (NEW.dept_id < 270)\nBEGIN\n  :NEW.dept_id := :NEW.dept_id + 10;\nEND;" },
+      { "label": "Manage", "code": "ALTER TRIGGER trig_name ENABLE;\nALTER TRIGGER trig_name DISABLE;\nDROP TRIGGER trig_name;" }
+    ],
+    "rules": [
+      "Trigger: named PL/SQL block that fires automatically on DML events (INSERT/UPDATE/DELETE)",
+      "Statement-level (default): fires once per DML statement, regardless of rows affected",
+      "Row-level (FOR EACH ROW): fires once per affected row",
+      ":NEW and :OLD are only available in row-level triggers",
+      "IF INSERTING/IF UPDATING/IF DELETING: detect the triggering operation",
+      "UPDATING('col_name'): check if a specific column was updated",
+      "WHEN clause: condition to filter which rows fire the trigger (use NEW/OLD without colon)",
+      "BEFORE: fires before the DML; can modify :NEW values",
+      "AFTER: fires after the DML; cannot modify :NEW (already written)",
+      "INSTEAD OF: for views only (WITH READ ONLY or multi-table views)",
+      "ALTER TRIGGER ENABLE/DISABLE to toggle; DROP TRIGGER to remove",
+      "Trigger info stored in USER_TRIGGERS view"
+    ]
+  },
+  {
+    "chapter": "CH5: Exceptions",
+    "syntaxes": [
+      { "label": "Handler", "code": "BEGIN\n  ...\nEXCEPTION\n  WHEN exception1 [OR exception2] THEN\n    ...\n  WHEN exception3 THEN\n    ...\n  WHEN OTHERS THEN\n    ...\nEND;" },
+      { "label": "User-defined", "code": "DECLARE\n  e_myerr EXCEPTION;\n  PRAGMA EXCEPTION_INIT(e_myerr, -20001);\nBEGIN\n  IF cond THEN\n    RAISE e_myerr;\n  END IF;\nEXCEPTION\n  WHEN e_myerr THEN ...\nEND;" },
+      { "label": "RAISE_APP_ERROR", "code": "RAISE_APPLICATION_ERROR(\n  error_number,  -- -20000 to -20999\n  message        -- max 2048 bytes\n);" },
+      { "label": "SQLCODE/SQLERRM", "code": "EXCEPTION\n  WHEN OTHERS THEN\n    DBMS_OUTPUT.PUT_LINE('Code: '||SQLCODE);\n    DBMS_OUTPUT.PUT_LINE('Msg:  '||SQLERRM);\n    ROLLBACK;\nEND;" }
+    ],
+    "rules": [
+      "Predefined: NO_DATA_FOUND(+100), TOO_MANY_ROWS(-1422), ZERO_DIVIDE(-1476), DUP_VAL_ON_INDEX(-1), INVALID_CURSOR(-1001), CURSOR_ALREADY_OPEN(-6511), INVALID_NUMBER(-1722), ROWTYPE_MISMATCH(-6504)",
+      "Predefined exceptions are raised implicitly by Oracle",
+      "User-defined exceptions: declared with 'e_name EXCEPTION;' then raised explicitly with RAISE",
+      "PRAGMA EXCEPTION_INIT(e_name, code): associate a custom name with an Oracle error code",
+      "RAISE e_name: trigger a user-defined exception explicitly",
+      "RAISE_APPLICATION_ERROR(-20000..-20999, 'msg'): raise custom error with message",
+      "WHEN OTHERS: catch-all — always put last (like an else)",
+      "SQLCODE: numeric error code; SQLERRM: error message text",
+      "RAISE alone (without name) inside a handler: re-raises the current exception",
+      "Exception propagation: unhandled exceptions bubble up to the calling block"
+    ]
+  }
+]

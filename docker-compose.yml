@@ -1,0 +1,12 @@
+services:
+  plsql-learning:
+    build: .
+    container_name: plsql-learning
+    ports:
+      - "127.0.0.1:8083:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-}
+    restart: unless-stopped
