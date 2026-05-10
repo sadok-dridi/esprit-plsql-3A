@@ -55,19 +55,7 @@ Each lesson follows: **Read** → **Run** → **Memorize** → **Practice** → 
 
 ---
 
-## Architecture
 
-```
-nginx (plsql.example.com → 127.0.0.1:8083)
-  └── Docker container: plsql-learning
-        ├── gunicorn → Flask app (internal port 8000)
-        │     ├── /api/*        JSON API (auth, progress, lessons)
-        │     └── /             static SPA (index.html)
-        ├── SQLite: data/app.db
-        └── data/lessons.json   (133 structured lessons)
-```
-
----
 
 ## Quick Start
 
@@ -78,28 +66,7 @@ pip install -r server/requirements.txt
 python server/app.py          # → http://localhost:5000
 ```
 
-### VPS deployment
 
-```bash
-git clone git@github.com:sadok-dridi/esprit-plsql-3A.git
-cd esprit-plsql-3A
-cp .env.example .env          # set SECRET_KEY
-docker compose up -d --build
-```
-
-nginx config:
-```nginx
-server {
-    listen 80;
-    server_name plsql.example.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8083;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
 
 ---
 
@@ -118,20 +85,6 @@ server {
 
 ---
 
-## SPA Views
-
-| Route | View | Auth |
-| --- | --- | :-: |
-| `#/login` | Login + Register | — |
-| `#/onboarding` | Oracle XE requirement | ✓ |
-| `#/dashboard` | Stats + chapter cards | ✓ |
-| `#/learn/:chapter` | Chapter overview | ✓ |
-| `#/learn/:chapter/:id` | Full lesson workflow | ✓ |
-| `#/roadmap` | Checklist with progress | ✓ |
-| `#/memory` | Memorization items | ✓ |
-| `#/admin` | All students list | — |
-
----
 
 ## File Structure
 
